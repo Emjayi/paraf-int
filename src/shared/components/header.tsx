@@ -8,6 +8,7 @@ import {
   CircleQuestionMark,
   Grid2X2,
   Languages,
+  LogOut,
   Search,
   ShoppingCart,
   Trophy,
@@ -16,9 +17,12 @@ import { Button } from "@/src/shared/components/wrappers/button";
 import { Input } from "@/src/shared/components/wrappers/input";
 import Image from "next/image";
 import Link from "next/link";
+import { useAuthStore } from "@/src/shared/lib/auth-storage";
+import { formatFaNumber } from "@/src/shared/lib/format";
 
 const navItems = ["کالا", "خدمات", "فروشندگان", "نمایندگی‌ها"];
-export function Header() {
+export function Header({ coins, scores }: { coins: number; scores: number }) {
+  const clear = useAuthStore((state) => state.clear);
   return (
     <header className="sticky top-0 z-50" aria-label="سربرگ">
       <div
@@ -85,6 +89,9 @@ export function Header() {
           <Button type="button" variant="ghost" size="icon" className="size-[34px] text-slate-700 hover:bg-slate-100" aria-label="دسته‌بندی‌ها">
             <Grid2X2 size={18} />
           </Button>
+          <Button type="button" onClick={clear} variant="ghost" size="icon" className="size-[34px] text-rose-500 hover:bg-rose-50" aria-label="خروج">
+            <LogOut size={18} />
+          </Button>
           </div>
         </div>
       </div>
@@ -111,8 +118,8 @@ export function Header() {
         <div className="flex items-center gap-2.5">
           <Button variant={"default"} className="inline-flex rounded-sm bg-white text-black hover:bg-white/80 border-zinc-300 h-[30px] items-center gap-1.5 px-3 shadow-[0_8px_22px_rgba(43,70,118,0.08)]">
             <span className="text-xs font-bold text-gray-500">کیف پول:</span>
-            <strong className="text-slate-800">۱۷۳,۵۷۹,۹۰۰</strong>
-            <small className="text-xs text-slate-500">تومان</small>
+            <strong className="text-slate-800">{formatFaNumber(coins)}</strong>
+            <small className="text-xs text-slate-500">سکه</small>
           </Button>
           <CircleQuestionMark className="h-4 w-4"/>
           <Button
@@ -120,7 +127,7 @@ export function Header() {
             variant="secondary"
             className="h-[30px] min-w-24 rounded-full border border-slate-200 bg-[linear-gradient(90deg,#6d64de,#8d44db)] px-3 text-xs font-bold text-white shadow-[0_8px_22px_rgba(43,70,118,0.08)]"
           >
-            <span>۱۲۴</span>
+            <span>{formatFaNumber(scores)}</span>
             <Trophy size={14} />
           </Button>
         </div>

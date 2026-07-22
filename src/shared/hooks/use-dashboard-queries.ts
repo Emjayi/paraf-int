@@ -1,6 +1,6 @@
 "use client";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuthStore } from "@/src/shared/lib/auth-storage";
 import {
   fetchCustomerClubSummary,
@@ -11,23 +11,17 @@ import {
   fetchVitrins,
   login,
 } from "@/src/shared/lib/api";
-import { dashboardFallback } from "@/src/shared/lib/dashboard-data";
 import type { LoginRequest, RecentActivitiesTypeEnum } from "@/src/shared/lib/types";
 
 export function useLoginMutation() {
+  const queryClient = useQueryClient();
   const setTokens = useAuthStore((state) => state.setTokens);
-  const setUser = useAuthStore((state) => state.setUser);
 
   return useMutation({
     mutationFn: (payload: LoginRequest) => login(payload),
-    onSuccess: async (tokens) => {
+    onSuccess: (tokens) => {
       setTokens(tokens);
-      try {
-        const me = await fetchMe();
-        setUser(me);
-      } catch {
-        setUser(dashboardFallback.me);
-      }
+      void queryClient.invalidateQueries();
     },
   });
 }
@@ -38,7 +32,6 @@ export function useMeQuery() {
     queryKey: ["me"],
     queryFn: fetchMe,
     enabled: Boolean(token),
-    initialData: dashboardFallback.me,
   });
 }
 
@@ -48,7 +41,6 @@ export function useVitrinsQuery() {
     queryKey: ["vitrins"],
     queryFn: fetchVitrins,
     enabled: Boolean(token),
-    initialData: dashboardFallback.vitrins,
   });
 }
 
@@ -58,7 +50,6 @@ export function useLevelsQuery() {
     queryKey: ["levels"],
     queryFn: fetchLevels,
     enabled: Boolean(token),
-    initialData: dashboardFallback.levels,
   });
 }
 
@@ -69,8 +60,7 @@ export function useCustomerClubSummaryQuery(userVitrinId?: string) {
     queryFn: userVitrinId
       ? () => fetchCustomerClubSummaryForVitrin(userVitrinId)
       : fetchCustomerClubSummary,
-    enabled: Boolean(token) || !userVitrinId,
-    initialData: dashboardFallback.summary,
+    enabled: Boolean(token),
   });
 }
 
@@ -84,8 +74,6 @@ export function useRecentActivitiesQuery(params?: {
   return useQuery({
     queryKey: ["recent-activities", params],
     queryFn: () => fetchRecentActivities(params ?? {}),
-    enabled: Boolean(token) || !params?.userVitrinId,
-    initialData: dashboardFallback.recentActivities,
+    enabled: Boolean(token),
   });
 }
-
